@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Essen und Trinken – gern</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF5F8; --ink:#223A4D; --muted:#657B8D; --line:#D9E6ED;
+  --sea:#3C8DAD; --sea-soft:#DCEEF5; --sea-deep:#2A6B87;
+  --sun:#F2B94B; --sun-soft:#FFF1CF; --sun-deep:#8A6410;
+  --mint:#47AE8A; --mint-soft:#DCF3EA; --mint-deep:#2E8A6B;
+  --coral:#E3705F; --coral-soft:#FCE4DF; --coral-deep:#C2503F;
+  --shadow:0 10px 28px -14px rgba(34,58,77,.38);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; font-weight:700; color:var(--ink);
+  background:var(--bg); min-height:100dvh; display:flex; flex-direction:column}
+.bg{position:fixed; inset:0; z-index:-1;
+  background:radial-gradient(900px 520px at 6% -8%,#DCEFF7 0%,transparent 62%),
+             radial-gradient(760px 460px at 104% 104%,#FFF3D6 0%,transparent 60%), var(--bg)}
+button{font:inherit; color:inherit}
+:focus-visible{outline:3px solid var(--sea); outline-offset:3px}
+
+.top{display:flex; align-items:center; gap:16px; padding:14px clamp(14px,3vw,32px)}
+.brand{font-weight:900; font-size:1.1rem; color:var(--sea-deep); white-space:nowrap}
+.progress{flex:1; height:8px; background:#D6E6EE; border-radius:99px; overflow:hidden}
+#bar{display:block; height:100%; width:0; background:var(--sea); border-radius:99px; transition:width .4s ease}
+.count{color:var(--muted); font-size:.9rem; min-width:3.4em; text-align:right}
+.tools{display:flex; gap:8px}
+.tool{display:flex; flex-direction:column; align-items:center; gap:2px; width:76px; padding:6px 4px 5px; background:#fff; color:var(--sea-deep);
+  border:2px solid #BFE0EE; border-radius:16px; cursor:pointer; font-size:.7rem; font-weight:800; line-height:1.1}
+.tool svg{width:26px; height:26px}
+.tool .slash{display:none}
+.tool.off{background:#E7EDF1; color:#8B9CA9; border-color:#D5DEE4}
+.tool.off .slash{display:inline}
+
+#stage{flex:1; display:flex; justify-content:center; align-items:center; padding:6px clamp(14px,3vw,32px) 14px}
+.slide{width:min(940px,100%); animation:fade .3s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+h1{font-size:clamp(1.7rem,3.4vw,2.5rem); font-weight:900; margin:0 0 6px; text-align:center; letter-spacing:-.01em}
+h2{margin:0}
+.lead{color:var(--muted); text-align:center; margin:0 0 20px; font-size:1.1rem}
+.hint{color:var(--muted); font-size:.95rem; margin:8px 0}
+.c{text-align:center}
+
+.nav{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:8px clamp(14px,3vw,32px) 22px}
+.btn{background:var(--sea-deep); color:#fff; border:0; border-radius:16px; padding:14px 26px; font-weight:900; font-size:1.05rem; cursor:pointer;
+  box-shadow:0 5px 0 #1D5066; display:inline-flex; align-items:center; gap:8px; transition:transform .1s, box-shadow .1s}
+.btn:active{transform:translateY(4px); box-shadow:0 1px 0 #1D5066}
+.btn.ghost{background:#fff; color:var(--sea-deep); border:2px solid #CFE0E8; box-shadow:0 5px 0 #CFE0E8}
+.btn:disabled{opacity:.4; cursor:default}
+.btn .spk{width:22px; height:22px}
+.center{display:flex; justify-content:center; margin:14px 0}
+
+/* Schalter */
+.ctrls{display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:14px}
+.seg{display:inline-flex; background:#fff; border:2px solid var(--line); border-radius:99px; padding:4px; gap:4px}
+.seg button{border:0; background:transparent; border-radius:99px; padding:8px 18px; font-weight:900; font-size:1.05rem; cursor:pointer; color:var(--muted)}
+.seg button.on{background:var(--sea-deep); color:#fff}
+.chips{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:18px}
+.chip{background:#fff; border:2px solid var(--line); border-radius:99px; padding:9px 18px; font-size:1.1rem; font-weight:800; cursor:pointer}
+.chip span{font-size:1.45rem; margin-right:4px}
+.chip:hover{border-color:var(--sea)}
+.chip.on{background:var(--sea-soft); border-color:var(--sea)}
+
+/* Blasen */
+.stack{display:flex; flex-direction:column; gap:6px; max-width:720px; margin:0 auto}
+.row{display:flex; align-items:flex-end; gap:12px; margin:8px 0}
+.row.k{flex-direction:row-reverse}
+.av{font-size:2.3rem; flex:none}
+.bubble{border:0; font-weight:800; font-size:clamp(1.1rem,2.6vw,1.6rem); padding:14px 20px; border-radius:22px; cursor:pointer; text-align:left;
+  display:inline-flex; gap:12px; align-items:center; color:var(--ink); box-shadow:var(--shadow)}
+.bubble.v{background:var(--sun-soft); border-bottom-left-radius:6px}
+.bubble.k{background:var(--sea-soft); border-bottom-right-radius:6px}
+.bubble .spk{width:22px; height:22px; flex:none; color:var(--sea-deep)}
+.bubble .sm{font-size:1.6rem}
+.speaking{outline:3px solid var(--sea); outline-offset:2px}
+.vb{color:var(--sea-deep); background:linear-gradient(transparent 62%, rgba(71,174,138,.38) 62%)}
+.gn{color:var(--mint-deep); font-weight:900}
+.gn.neg{color:var(--coral-deep)}
+.answers{flex-wrap:wrap; align-items:center}
+.pop{animation:pop2 .35s ease}
+@keyframes pop2{0%{transform:scale(.97)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+.mid{margin:18px auto 6px; text-align:center; color:var(--muted)}
+
+/* Intro-Karten */
+.cards{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+.card{position:relative; border:2px solid transparent; border-radius:26px; padding:22px 16px 18px; text-align:center; cursor:pointer; box-shadow:var(--shadow);
+  display:flex; flex-direction:column; align-items:center; gap:10px; transition:transform .15s}
+.card:hover{transform:translateY(-3px)}
+.card.pos{background:var(--mint-soft); border-color:#BFE6D6}
+.card.neg{background:var(--coral-soft); border-color:#F5C9C1}
+.card .food{font-size:clamp(3rem,8vw,4.4rem); line-height:1.1}
+.card .sm{position:absolute; top:12px; right:14px; font-size:1.9rem}
+.card .s{font-size:clamp(1.15rem,2.6vw,1.6rem); font-weight:900}
+
+/* Dialog */
+.dlg{min-height:150px}
+.dlg .row{animation:fade .3s ease}
+
+/* Überblick */
+.two{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+.panel{background:#fff; border:2px solid var(--line); border-radius:26px; padding:20px; box-shadow:var(--shadow)}
+.panel h2{font-size:1.3rem; margin-bottom:12px; text-align:center}
+.grp{display:flex; align-items:flex-start; gap:10px; margin:10px 0}
+.grp .who{flex:none; min-width:48px; text-align:center; border-radius:12px; padding:5px 0; font-size:.95rem; font-weight:900}
+.who.sie{background:var(--sun-soft); color:var(--sun-deep)}
+.who.du{background:var(--sea-soft); color:var(--sea-deep)}
+.who.yes{background:var(--mint-soft); font-size:1.3rem; padding:2px 0}
+.who.no{background:var(--coral-soft); font-size:1.3rem; padding:2px 0}
+.pills{display:flex; flex-direction:column; gap:6px; align-items:flex-start}
+.pill{background:var(--bg); border:0; border-radius:14px; padding:8px 14px; font-weight:800; font-size:1.05rem; cursor:pointer; text-align:left}
+.pill:hover{background:var(--sea-soft)}
+.panel hr{border:0; border-top:2px dashed var(--line); margin:14px 0}
+
+/* Quiz */
+.quiz{background:#fff; border-radius:28px; padding:26px; box-shadow:var(--shadow); border:2px solid var(--line); max-width:760px; margin:0 auto}
+.qhead{color:var(--muted); font-size:.95rem; margin-bottom:12px}
+.qprompt{text-align:center; margin-bottom:20px}
+.qvis{font-size:3.2rem; margin-bottom:6px}
+.qtext{font-size:clamp(1.5rem,3.4vw,2.2rem); font-weight:900}
+.gap{display:inline-block; min-width:3.6em; border-bottom:4px dashed var(--coral); color:var(--coral-deep)}
+.gap.filled{border-bottom-color:var(--mint); color:var(--mint-deep)}
+.opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px}
+.opt{font-weight:900; font-size:1.45rem; padding:18px 10px; border-radius:18px; border:3px solid var(--line); background:#fff; cursor:pointer}
+.opt.emo{font-size:3.2rem}
+.opt:hover{border-color:var(--sea); background:var(--sea-soft)}
+.opt.right{background:var(--mint-soft); border-color:var(--mint)}
+.opt.wrong{background:var(--coral-soft); border-color:var(--coral); animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.qfoot{display:flex; justify-content:flex-end; margin-top:18px; min-height:56px}
+.done{text-align:center; padding:14px 0}
+.done .stars{font-size:2.4rem; letter-spacing:.15em}
+.done h2{font-size:2rem; margin:8px 0}
+.confetti i{position:fixed; top:-20px; width:10px; height:14px; border-radius:2px; animation:fall 3.2s linear forwards; pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+
+@media (max-width:700px){
+  .two{grid-template-columns:1fr}
+  .tool{width:64px; font-size:.62rem}
+  .brand{display:none}
+}
+@media (max-width:480px){ .cards{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important} }
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+
+<header class="top">
+  <div class="brand">🍽️ Essen und Trinken</div>
+  <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+  <div class="count" id="count"></div>
+  <div class="tools">
+    <button class="tool" id="tVoice" type="button" aria-pressed="true" title="Aussprache an oder aus" aria-label="Aussprache an oder aus">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" fill="currentColor"/><path d="M7 10h10M7 13h6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><line class="slash" x1="3" y1="3" x2="21" y2="21" stroke="#fff" stroke-width="5" stroke-linecap="round"/><line class="slash" x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <span>Aussprache</span>
+    </button>
+    <button class="tool" id="tFx" type="button" aria-pressed="true" title="Effekte an oder aus" aria-label="Effekte an oder aus">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6z" fill="currentColor"/><path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><line class="slash" x1="3" y1="3" x2="21" y2="21" stroke="#fff" stroke-width="5" stroke-linecap="round"/><line class="slash" x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <span>Effekte</span>
+    </button>
+  </div>
+</header>
+
+<main id="stage"></main>
+
+<footer class="nav">
+  <button class="btn ghost" id="prev" type="button">Zurück</button>
+  <button class="btn" id="next" type="button">Weiter</button>
+</footer>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const SPK='<svg class="spk" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
+/* ===== Töne ===== */
+let voiceOn=true, fxOn=true;
+try{ if(localStorage.getItem('gern.voice')==='0')voiceOn=false; if(localStorage.getItem('gern.fx')==='0')fxOn=false; }catch(e){}
+let deVoice=null;
+function pickVoice(){ if(!('speechSynthesis' in window))return; const v=speechSynthesis.getVoices();
+  deVoice=v.find(x=>/^de[-_]DE/i.test(x.lang))||v.find(x=>/^de/i.test(x.lang))||null; }
+if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
+function say(text){
+  if(!voiceOn||!('speechSynthesis' in window))return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; if(deVoice)u.voice=deVoice; u.rate=.85; speechSynthesis.speak(u);
+}
+let actx=null;
+function ac(){ if(!actx){const C=window.AudioContext||window.webkitAudioContext; if(!C)return null; actx=new C();} if(actx.state==='suspended')actx.resume(); return actx; }
+function tone(f,t0,d,type,vol){ const c=ac(); if(!c)return; const o=c.createOscillator(), g=c.createGain(), t=c.currentTime+t0;
+  o.type=type||'sine'; o.frequency.setValueAtTime(f,t); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(vol||.16,t+.02);
+  g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+d+.05); }
+const FX={
+  click(){tone(520,0,.07,'sine',.07);},
+  right(){tone(660,0,.14,'triangle',.18);tone(880,.12,.24,'triangle',.18);},
+  wrong(){tone(230,0,.16,'sawtooth',.08);tone(170,.14,.26,'sawtooth',.08);},
+  win(){[523,659,784,1047].forEach((f,i)=>tone(f,i*.13,.28,'triangle',.17));tone(1319,.55,.5,'triangle',.15);}
+};
+function playFx(n){ if(!fxOn)return; try{FX[n]();}catch(e){} }
+function setTool(b,on){ b.classList.toggle('off',!on); b.setAttribute('aria-pressed',on?'true':'false'); }
+setTool($('#tVoice'),voiceOn); setTool($('#tFx'),fxOn);
+$('#tVoice').addEventListener('click',()=>{ voiceOn=!voiceOn; setTool($('#tVoice'),voiceOn);
+  try{localStorage.setItem('gern.voice',voiceOn?'1':'0');}catch(e){}
+  if(!voiceOn&&'speechSynthesis' in window)speechSynthesis.cancel(); else say('Hallo!'); });
+$('#tFx').addEventListener('click',()=>{ fxOn=!fxOn; setTool($('#tFx'),fxOn);
+  try{localStorage.setItem('gern.fx',fxOn?'1':'0');}catch(e){} if(fxOn)FX.right(); });
+
+function pulse(el){ el.classList.add('speaking'); setTimeout(()=>el.classList.remove('speaking'),1200); }
+document.addEventListener('click',e=>{
+  const s=e.target.closest('[data-say]');
+  if(s){ playFx('click'); say(s.dataset.say); pulse(s); }
+});
+
+/* ===== Daten ===== */
+const ITEMS={
+  essen:  [{e:'🍕',w:'Pizza'},{e:'🐟',w:'Fisch'},{e:'🥗',w:'Salat'},{e:'🍎',w:'Obst'},{e:'🍚',w:'Reis'},{e:'🍦',w:'Eis'}],
+  trinken:[{e:'💧',w:'Wasser'},{e:'🍵',w:'Tee'},{e:'☕',w:'Kaffee'},{e:'🧃',w:'Saft'},{e:'🥛',w:'Milch'},{e:'🥤',w:'Cola'}]
+};
+const FORM={ essen:{Sie:'Essen',du:'Isst',ich:'esse',sieL:'essen',duL:'isst'}, trinken:{Sie:'Trinken',du:'Trinkst',ich:'trinke',sieL:'trinken',duL:'trinkst'} };
+
+function seg(opts,val,cb){
+  const d=document.createElement('div'); d.className='seg';
+  opts.forEach(o=>{
+    const b=document.createElement('button'); b.type='button'; b.innerHTML=o.label; if(o.v===val)b.classList.add('on');
+    b.addEventListener('click',()=>{ $$('button',d).forEach(x=>x.classList.remove('on')); b.classList.add('on'); playFx('click'); cb(o.v); });
+    d.appendChild(b);
+  });
+  return d;
+}
+function renderChips(box,act,cur,cb){
+  box.innerHTML=ITEMS[act].map(i=>`<button class="chip${i.w===cur.w?' on':''}" type="button" data-w="${i.w}"><span>${i.e}</span>${i.w}</button>`).join('');
+  $$('.chip',box).forEach(c=>c.addEventListener('click',()=>{ cb(ITEMS[act].find(i=>i.w===c.dataset.w)); }));
+}
+function popIt(el){ el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
+/* ===== Folien ===== */
+function rIntro(el){
+  const C=[
+    ['pos','😊','🍕','Ich esse <span class="gn">gern</span> Pizza.','Ich esse gern Pizza.'],
+    ['neg','☹️','🐟','Ich esse <span class="gn neg">nicht gern</span> Fisch.','Ich esse nicht gern Fisch.'],
+    ['pos','😊','🍵','Ich trinke <span class="gn">gern</span> Tee.','Ich trinke gern Tee.'],
+    ['neg','☹️','☕','Ich trinke <span class="gn neg">nicht gern</span> Kaffee.','Ich trinke nicht gern Kaffee.']
+  ];
+  el.innerHTML=`<div class="cards">${C.map(c=>`<button class="card ${c[0]}" type="button" data-say="${c[4]}">
+      <span class="sm">${c[1]}</span><span class="food">${c[2]}</span><span class="s">${c[3]}</span></button>`).join('')}</div>`;
+}
+
+function rYN(el){
+  let person='Sie', act='essen', item=ITEMS.essen[0];
+  el.innerHTML=`<div class="ctrls"></div><div class="chips"></div>
+    <div class="stack">
+      <div class="row k"><div class="av">🙋</div><button class="bubble k" id="q" type="button"></button></div>
+      <div class="row v answers"><div class="av">🧑‍💼</div>
+        <button class="bubble v" type="button" data-say="Ja, sehr gern."><span class="sm">😊</span>Ja, sehr gern.${SPK}</button>
+        <button class="bubble v" type="button" data-say="Nein, nicht so gern."><span class="sm">☹️</span>Nein, nicht so gern.${SPK}</button>
+      </div>
+    </div>`;
+  const ctrls=$('.ctrls',el), chips=$('.chips',el), q=$('#q',el);
+  function update(anim){
+    const verb=FORM[act][person];
+    q.innerHTML=`<span><span class="vb">${verb}</span> ${person} <span class="gn">gern</span> ${item.w}?</span>${SPK}`;
+    q.dataset.say=`${verb} ${person} gern ${item.w}?`;
+    if(anim)popIt(q);
+    renderChips(chips,act,item,i=>{ item=i; playFx('click'); update(true); say(q.dataset.say); });
+  }
+  ctrls.appendChild(seg([{v:'Sie',label:'Sie'},{v:'du',label:'du'}],person,v=>{ person=v; update(true); say(q.dataset.say); }));
+  ctrls.appendChild(seg([{v:'essen',label:'🍽️ essen'},{v:'trinken',label:'🥤 trinken'}],act,v=>{ act=v; item=ITEMS[act][0]; update(true); say(q.dataset.say); }));
+  update(false);
+}
+
+function rWas(el){
+  let person='Sie', act='essen', item=ITEMS.essen[0], neg=false;
+  el.innerHTML=`<div class="ctrls"></div>
+    <div class="stack">
+      <div class="row k"><div class="av">🙋</div><button class="bubble k" id="q" type="button"></button></div>
+    </div>
+    <p class="mid">Antwort:</p>
+    <div class="ctrls ans"></div><div class="chips"></div>
+    <div class="stack"><div class="row v"><div class="av">🧑‍💼</div><button class="bubble v" id="a" type="button"></button></div></div>`;
+  const ctrls=$('.ctrls',el), chips=$('.chips',el), q=$('#q',el), a=$('#a',el);
+  function update(anim,who){
+    const f=FORM[act];
+    q.innerHTML=`<span>Was <span class="vb">${person==='Sie'?f.sieL:f.duL}</span> ${person} <span class="gn">gern</span>?</span>${SPK}`;
+    q.dataset.say=`Was ${person==='Sie'?f.sieL:f.duL} ${person} gern?`;
+    a.innerHTML=`<span>Ich <span class="vb">${f.ich}</span> <span class="gn${neg?' neg':''}">${neg?'nicht gern':'gern'}</span> ${item.w}.</span>${SPK}`;
+    a.dataset.say=`Ich ${f.ich} ${neg?'nicht gern':'gern'} ${item.w}.`;
+    if(anim){ popIt(who==='q'?q:a); }
+    renderChips(chips,act,item,i=>{ item=i; playFx('click'); update(true,'a'); say(a.dataset.say); });
+  }
+  ctrls.appendChild(seg([{v:'Sie',label:'Sie'},{v:'du',label:'du'}],person,v=>{ person=v; update(true,'q'); say(q.dataset.say); }));
+  ctrls.appendChild(seg([{v:'essen',label:'🍽️ essen'},{v:'trinken',label:'🥤 trinken'}],act,v=>{ act=v; item=ITEMS[act][0]; update(true,'q'); say(q.dataset.say); }));
+  $('.ans',el).appendChild(seg([{v:'p',label:'😊 gern'},{v:'n',label:'☹️ nicht gern'}],'p',v=>{ neg=(v==='n'); update(true,'a'); say(a.dataset.say); }));
+  update(false);
+}
+
+function rDialog(el){
+  const D={
+    Sie:{ a:'👩‍💼', b:'👨‍💼', L:[['a','Trinken Sie gern Tee?'],['b','Ja, sehr gern.','😊'],['a','Essen Sie gern Fisch?'],['b','Nein, nicht so gern.','☹️'],['a','Was essen Sie gern?'],['b','Ich esse gern Pizza.','😊']] },
+    du: { a:'👩',   b:'🧑',   L:[['a','Trinkst du gern Kaffee?'],['b','Ja, sehr gern.','😊'],['a','Isst du gern Salat?'],['b','Nein, nicht so gern.','☹️'],['a','Was trinkst du gern?'],['b','Ich trinke gern Wasser.','😊']] }
+  };
+  let who='Sie', i=0;
+  el.innerHTML=`<div class="ctrls"></div><div class="stack"><div class="dlg"></div></div><div class="center"><button class="btn" type="button" id="dn">Nächste Zeile</button></div>`;
+  const dlg=$('.dlg',el), btn=$('#dn',el);
+  function reset(){ dlg.innerHTML=''; i=0; btn.textContent='Nächste Zeile'; }
+  $('.ctrls',el).appendChild(seg([{v:'Sie',label:'Sie'},{v:'du',label:'du'}],who,v=>{ who=v; reset(); }));
+  btn.addEventListener('click',()=>{
+    const L=D[who].L;
+    if(i>=L.length){ reset(); return; }
+    const l=L[i++], isA=l[0]==='a';
+    const row=document.createElement('div'); row.className='row '+(isA?'k':'v');
+    row.innerHTML=`<div class="av">${isA?D[who].a:D[who].b}</div><button class="bubble ${isA?'k':'v'}" type="button" data-say="${l[1]}">${l[2]?`<span class="sm">${l[2]}</span>`:''}${l[1]}${SPK}</button>`;
+    dlg.appendChild(row); playFx('click'); say(l[1]);
+    row.scrollIntoView({block:'nearest',behavior:'smooth'});
+    if(i>=L.length){ btn.textContent='Nochmal'; setTimeout(()=>playFx('win'),1600); }
+  });
+}
+
+function rOverview(el){
+  const P=(t,s)=>`<button class="pill" type="button" data-say="${s||t}">${t}</button>`;
+  el.innerHTML=`<div class="two">
+    <div class="panel"><h2>Frage mit Ja oder Nein</h2>
+      <div class="grp"><span class="who sie">Sie</span><div class="pills">${P('Essen Sie gern …?','Essen Sie gern')}${P('Trinken Sie gern …?','Trinken Sie gern')}</div></div>
+      <div class="grp"><span class="who du">du</span><div class="pills">${P('Isst du gern …?','Isst du gern')}${P('Trinkst du gern …?','Trinkst du gern')}</div></div>
+      <hr>
+      <div class="grp"><span class="who yes">😊</span><div class="pills">${P('Ja, sehr gern.')}</div></div>
+      <div class="grp"><span class="who no">☹️</span><div class="pills">${P('Nein, nicht so gern.')}</div></div>
+    </div>
+    <div class="panel"><h2>Frage mit Was</h2>
+      <div class="grp"><span class="who sie">Sie</span><div class="pills">${P('Was essen Sie gern?')}${P('Was trinken Sie gern?')}</div></div>
+      <div class="grp"><span class="who du">du</span><div class="pills">${P('Was isst du gern?')}${P('Was trinkst du gern?')}</div></div>
+      <hr>
+      <div class="grp"><span class="who yes">😊</span><div class="pills">${P('Ich esse gern …','Ich esse gern')}${P('Ich trinke gern …','Ich trinke gern')}</div></div>
+      <div class="grp"><span class="who no">☹️</span><div class="pills">${P('Ich esse nicht gern …','Ich esse nicht gern')}${P('Ich trinke nicht gern …','Ich trinke nicht gern')}</div></div>
+    </div>
+  </div>`;
+}
+
+/* ===== Quiz ===== */
+function quiz(root,qs){
+  const box=document.createElement('div'); box.className='quiz'; root.appendChild(box);
+  let i=0, first=0;
+  function show(){
+    const q=qs[i]; let tried=false, solved=false;
+    box.innerHTML=`<div class="qhead">Frage ${i+1} von ${qs.length}</div>
+      <div class="qprompt">
+        ${q.visual?`<div class="qvis">${q.visual}</div>`:''}
+        ${q.text?`<div class="qtext">${q.text}</div>`:''}
+        ${q.listen?`<button class="btn play" type="button">${SPK} Anhören</button><p class="hint c"></p>`:''}
+      </div>
+      <div class="opts"></div><div class="qfoot"></div>`;
+    const opts=$('.opts',box), foot=$('.qfoot',box);
+    q.options.forEach(o=>{
+      const b=document.createElement('button'); b.type='button'; b.className='opt '+(q.cls||''); b.innerHTML=o.label;
+      b.addEventListener('click',()=>{
+        if(solved||b.classList.contains('wrong'))return;
+        if(o.v===q.correct){
+          solved=true; b.classList.add('right'); playFx('right'); if(!tried)first++;
+          const g=$('.gap',box); if(g){ g.textContent=o.label; g.classList.add('filled'); }
+          if(q.say)setTimeout(()=>say(q.say),450);
+          const n=document.createElement('button'); n.type='button'; n.className='btn'; n.textContent=(i===qs.length-1)?'Fertig':'Weiter';
+          n.addEventListener('click',()=>{ playFx('click'); if(i<qs.length-1){i++;show();} else finish(); });
+          foot.appendChild(n);
+        } else { tried=true; b.classList.add('wrong'); playFx('wrong'); }
+      });
+      opts.appendChild(b);
+    });
+    if(q.listen){
+      const hint=$('.hint',box);
+      const play=()=>{ if(!voiceOn){hint.textContent='Schalte die Aussprache ein.';return;} hint.textContent=''; say(q.listen); };
+      $('.play',box).addEventListener('click',play); setTimeout(play,300);
+    }
+  }
+  function finish(){
+    box.innerHTML=`<div class="done"><div class="stars">${'⭐'.repeat(first)}${'☆'.repeat(qs.length-first)}</div>
+      <h2>${first===qs.length?'Perfekt!':'Gut gemacht!'}</h2><p class="lead">${first} von ${qs.length} richtig beim ersten Mal.</p>
+      <button class="btn ghost" type="button">Nochmal</button></div>`;
+    playFx('win'); $('.btn',box).addEventListener('click',()=>{ i=0; first=0; show(); });
+    const cols=['#3C8DAD','#F2B94B','#47AE8A','#E3705F','#7FB8D0']; const c=document.createElement('div'); c.className='confetti';
+    for(let k=0;k<40;k++){ const p=document.createElement('i'); p.style.left=Math.random()*100+'vw'; p.style.background=cols[k%cols.length];
+      p.style.animationDelay=(Math.random()*1.1)+'s'; p.style.animationDuration=(2.4+Math.random()*1.6)+'s'; c.appendChild(p); }
+    box.appendChild(c); setTimeout(()=>c.remove(),5000);
+  }
+  show();
+}
+function rQuizForm(el){
+  const gap='<span class="gap">___</span>';
+  const o=a=>shuffle(a).map(x=>({v:x,label:x}));
+  quiz(el,[
+    {visual:'🐟',text:`${gap} du gern Fisch?`,     options:o(['Isst','Essen','Esse']),          correct:'Isst',   say:'Isst du gern Fisch?'},
+    {visual:'🍵',text:`${gap} Sie gern Tee?`,      options:o(['Trinken','Trinkst','Trinke']),   correct:'Trinken',say:'Trinken Sie gern Tee?'},
+    {visual:'☕',text:`Was ${gap} du gern?`,       options:o(['trinken','trinkst','trinke']),   correct:'trinkst',say:'Was trinkst du gern?'},
+    {visual:'🍕',text:`Ich ${gap} gern Pizza.`,    options:o(['esse','isst','essen']),          correct:'esse',   say:'Ich esse gern Pizza.'},
+    {visual:'🥗',text:`Was ${gap} Sie gern?`,      options:o(['essen','isst','esse']),          correct:'essen',  say:'Was essen Sie gern?'}
+  ]);
+}
+function rQuizHear(el){
+  const mk=(s,c)=>({listen:s,correct:c,cls:'emo',options:[{v:'p',label:'😊'},{v:'n',label:'☹️'}]});
+  quiz(el,shuffle([
+    mk('Ja, sehr gern.','p'), mk('Nein, nicht so gern.','n'), mk('Ich esse nicht gern Fisch.','n'),
+    mk('Ich trinke gern Tee.','p'), mk('Ich trinke nicht gern Kaffee.','n')
+  ]));
+}
+
+const S=[
+  {t:'gern und nicht gern',   l:'Tippe auf eine Karte.',                 r:rIntro},
+  {t:'Essen Sie gern …?',     l:'Wähle Sie oder du, dann etwas zum Essen oder Trinken.', r:rYN},
+  {t:'Was essen Sie gern?',   l:'Wähle die Frage und die Antwort.',      r:rWas},
+  {t:'Im Gespräch',           l:'Tippe auf „Nächste Zeile“.',            r:rDialog},
+  {t:'Alles auf einen Blick', l:'Tippe auf einen Satz.',                 r:rOverview},
+  {t:'Welches Wort passt?',   l:'Sie oder du? essen oder trinken?',      r:rQuizForm},
+  {t:'😊 oder ☹️?',           l:'Hör zu und wähle.',                     r:rQuizHear}
+];
+
+/* ===== Navigation ===== */
+let cur=0;
+function go(n){
+  n=Math.max(0,Math.min(S.length-1,n)); cur=n;
+  if('speechSynthesis' in window)speechSynthesis.cancel();
+  const stage=$('#stage'); stage.innerHTML='';
+  const sec=document.createElement('section'); sec.className='slide';
+  sec.innerHTML=`<h1>${S[cur].t}</h1><p class="lead">${S[cur].l}</p>`;
+  const body=document.createElement('div'); sec.appendChild(body); stage.appendChild(sec); S[cur].r(body);
+  $('#bar').style.width=((cur+1)/S.length*100)+'%';
+  $('#count').textContent=(cur+1)+' / '+S.length;
+  $('#prev').disabled=cur===0; $('#next').disabled=cur===S.length-1;
+  window.scrollTo(0,0);
+  try{history.replaceState(null,'','#'+(cur+1));}catch(e){}
+}
+$('#prev').addEventListener('click',()=>{playFx('click');go(cur-1);});
+$('#next').addEventListener('click',()=>{playFx('click');go(cur+1);});
+document.addEventListener('keydown',e=>{ if(e.key==='ArrowRight')go(cur+1); if(e.key==='ArrowLeft')go(cur-1); });
+let tx=null;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{ if(tx===null)return; const dx=e.changedTouches[0].clientX-tx; tx=null; if(Math.abs(dx)>80)go(cur+(dx<0?1:-1)); },{passive:true});
+const h=parseInt((location.hash||'').slice(1),10);
+go(isNaN(h)?0:h-1);
+})();
+</script>
+</body>
+</html>
